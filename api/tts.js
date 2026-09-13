@@ -35,8 +35,43 @@ module.exports = async function(req, res) {
     res.setHeader('Content-Length', audioBuffer.length);
     res.status(200).send(audioBuffer);
     
+  } const { MsEdgeTTS, OUTPUT_FORMAT } = require("msedge-tts");
+
+module.exports = async function(req, res) {
+  const text = req.query.text;
+
+  if (!text) {
+    return res.status(400).send("請提供 text 參數");
+  }
+
+  try {
+    const tts = new MsEdgeTTS();
+    await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    
+    const stream = tts.toStream(text);
+    const chunks = []; 
+
+    await new Promise((resolve, reject) => {
+      stream.on('data', (chunk) => {
+        chunks.push(chunk); 
+      });
+      stream.on('end', () => {
+        resolve(); 
+      });
+      stream.on('error', (err) => {
+        reject(err);
+      });
+    });
+
+    const audioBuffer = Buffer.concat(chunks);
+    
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', audioBuffer.length);
+    res.status(200).send(audioBuffer);
+    
   } catch (error) {
+    // 🚀 關鍵修改：把真正的錯誤原因印在畫面上！
     console.error("TTS 發生錯誤:", error);
-    res.status(500).send("語音引擎啟動失敗");
+    res.status(500).send("語音引擎啟動失敗。真實死因：" + error.toString() + " | 詳細訊息：" + error.message);
   }
 };
