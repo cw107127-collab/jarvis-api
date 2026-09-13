@@ -1,0 +1,6 @@
+{
+  "name": "jarvis-api",
+  "dependencies": {
+    "msedge-tts": "latest"
+  }
+}
