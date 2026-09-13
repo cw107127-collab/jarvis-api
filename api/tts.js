@@ -8,18 +8,32 @@ module.exports = async function(req, res) {
   }
 
   try {
-    // 1. 啟動微軟 Edge 語音引擎
     const tts = new MsEdgeTTS();
-    
-    // 2. 設定聲音為台灣微軟曉臻 (高音質 MP3 格式)
     await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     
-    // 3. 告訴瀏覽器 (或 ESP32)：接下來傳過去的是 MP3 音樂檔喔！
-    res.setHeader('Content-Type', 'audio/mpeg');
-    
-    // 4. 開始將文字轉成語音，並直接「像水管一樣」串流灌給 ESP32
     const stream = tts.toStream(text);
-    stream.pipe(res);
+    const chunks = []; // 準備一個水桶來收集聲音碎片
+
+    // 🏆 強迫 Vercel 耐心等待：直到語音完全生成完畢
+    await new Promise((resolve, reject) => {
+      stream.on('data', (chunk) => {
+        chunks.push(chunk); // 把每一滴聲音裝進水桶
+      });
+      stream.on('end', () => {
+        resolve(); // 宣告裝水完成！
+      });
+      stream.on('error', (err) => {
+        reject(err);
+      });
+    });
+
+    // 將所有碎片組合成一個完整的 MP3 檔案
+    const audioBuffer = Buffer.concat(chunks);
+    
+    // 加上完整長度標籤，一口氣回傳給手機
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Content-Length', audioBuffer.length);
+    res.status(200).send(audioBuffer);
     
   } catch (error) {
     console.error("TTS 發生錯誤:", error);
