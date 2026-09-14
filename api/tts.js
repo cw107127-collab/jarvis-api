@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   try {
     const tts = new MsEdgeTTS();
     // 這裡我們以雲希男聲為基底 (你也可以換成你喜歡的配音員)
-    await tts.setMetadata("zh-CN-YunxiNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     
     // 🎛️ 變聲調音台 (SSML)
     // rate="-20%": 語速放慢 20%
