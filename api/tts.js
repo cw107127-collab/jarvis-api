@@ -10,7 +10,7 @@ export default async function handler(req, res) {
 
   try {
     const tts = new MsEdgeTTS();
-    await tts.setMetadata("zh-CN-XiaoxiaoNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     
     // 🚀 關鍵修復：加上大括號，從回傳的物件中把 audioStream 解構出來
     const { audioStream } = tts.toStream(text);
