@@ -2,7 +2,6 @@
   "name": "jarvis-api",
   "type": "module",
   "dependencies": {
-    "ai": "latest",
-    "@ai-sdk/gateway": "latest"
+    "msedge-tts": "latest"
   }
 }
