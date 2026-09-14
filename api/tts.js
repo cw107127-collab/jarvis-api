@@ -11,9 +11,8 @@ export default async function handler(req, res) {
   try {
     const tts = new MsEdgeTTS();
     
-    // 🚀 為未來的 E.V 換上「曉雨 (HsiaoYu)」自然台灣女聲
-    // 若未來想要更活潑的聲音，可改為 "zh-CN-XiaoxiaoNeural"
-    await tts.setMetadata("zh-TW-HsiaoYuNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    // 🚀 換回最初也是最經典的台灣微軟曉臻 (HsiaoChen)
+    await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     
     const { audioStream } = tts.toStream(text);
     const chunks = []; 
