@@ -3,7 +3,7 @@ import { kv } from '@vercel/kv';
 export default async function handler(req, res) {
   try {
     // ⚠️ 記得替換成你的 Gemini API 金鑰
-    const apiKey = AQ.Ab8RN6Lv9CXYkk88nvPhCuXf0fYS5kBkQSHJXSaIXQXLSWnvRA;
+    const apiKey ="AQ.Ab8RN6Lv9CXYkk88nvPhCuXf0fYS5kBkQSHJXSaIXQXLSWnvRA";
     
     // 給 E.V. 的自主學習指令
     const prompt = "你現在是 E.V.，一個極度理智、冷靜的 AI 助理。請去網路上隨機搜尋一則今天最新的科技新聞、太空探索進度或有趣的科學冷知識。請用繁體中文在 50 個字以內總結重點。開頭請固定說：『報告 Sir，我趁您休息時發現了一筆資料...』";
