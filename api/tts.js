@@ -8,27 +8,20 @@ export default async function handler(req, res) {
     return res.status(400).send("請提供 text 參數");
   }
 
-  // 🛡️ 防呆機制：將 Gemini 回傳的特殊符號轉換，避免破壞變聲器的 XML 結構
-  const safeText = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // 1. 消毒：把 Gemini 回傳內容裡可能會破壞語法的危險符號清掉
+  const safeText = text.replace(/&/g, '&amp;').replace(/</g, '').replace(/>/g, '');
 
   try {
     const tts = new MsEdgeTTS();
-    // 這裡我們以雲希男聲為基底 (你也可以換成你喜歡的配音員)
-    await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    await tts.setMetadata("zh-CN-YunxiNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     
-    // 🎛️ 變聲調音台 (SSML)
-    // rate="-20%": 語速放慢 20%
-    // pitch="-15%": 音調壓低 15%，製造出厚重、無情緒的機器電子感
-    const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="zh-TW">
-                    <voice name="zh-CN-YunxiNeural">
-                      <prosody rate="-20%" pitch="-15%">
-                        ${safeText}
-                      </prosody>
-                    </voice>
-                  </speak>`;
+    // 🚀 2. 標籤注入：只穿插 <prosody> 變聲標籤，不破壞原有的外殼！
+    // rate="-20%": 降速 20%
+    // pitch="-25%": 音調大幅壓低，製造無機質的厚重電子感
+    const injectedText = `<prosody rate="-20%" pitch="-25%">${safeText}</prosody>`;
 
-    // 將改裝過的 SSML 送進引擎
-    const { audioStream } = tts.toStream(ssml);
+    // 把注入變聲標籤的文字送進引擎
+    const { audioStream } = tts.toStream(injectedText);
     const chunks = []; 
 
     await new Promise((resolve, reject) => {
