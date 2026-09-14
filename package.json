@@ -2,6 +2,7 @@
   "name": "jarvis-api",
   "type": "module",
   "dependencies": {
-    "msedge-tts": "latest"
+    "msedge-tts": "latest",
+    "@vercel/kv": "latest"
   }
 }
