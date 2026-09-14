@@ -1,6 +1,7 @@
 {
   "name": "jarvis-api",
   "dependencies": {
-    "msedge-tts": "latest"
+    "ai": "latest",
+    "@ai-sdk/gateway": "latest"
   }
 }
