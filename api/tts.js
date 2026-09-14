@@ -1,77 +1,32 @@
-const { MsEdgeTTS, OUTPUT_FORMAT } = require("msedge-tts");
+// /api/tts.js
+import { experimental_generateSpeech as generateSpeech } from 'ai';
+import { gateway } from '@ai-sdk/gateway';
 
-module.exports = async function(req, res) {
+export default async function handler(req, res) {
   const text = req.query.text;
 
+  // 基本防呆檢查
   if (!text) {
     return res.status(400).send("請提供 text 參數");
   }
 
   try {
-    const tts = new MsEdgeTTS();
-    await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-    
-    const stream = tts.toStream(text);
-    const chunks = []; // 準備一個水桶來收集聲音碎片
-
-    // 🏆 強迫 Vercel 耐心等待：直到語音完全生成完畢
-    await new Promise((resolve, reject) => {
-      stream.on('data', (chunk) => {
-        chunks.push(chunk); // 把每一滴聲音裝進水桶
-      });
-      stream.on('end', () => {
-        resolve(); // 宣告裝水完成！
-      });
-      stream.on('error', (err) => {
-        reject(err);
-      });
+    // 呼叫 Vercel 原生的 Fish Audio 免費模型
+    const result = await generateSpeech({
+      model: gateway.speechModel('fish-audio/s1-free'),
+      text: text,
+      // 這是 Fish Audio 預設的女聲 ID，聲音自然且帶有情緒
+      voice: '933563129e564b19a115bedd57b7406a', 
     });
 
-    // 將所有碎片組合成一個完整的 MP3 檔案
-    const audioBuffer = Buffer.concat(chunks);
-    
-    // 加上完整長度標籤，一口氣回傳給手機
+    // 成功拿到音檔資料後，設定正確的標頭，並回傳二進位資料給手機/ESP32
     res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', audioBuffer.length);
-    res.status(200).send(audioBuffer);
-    
-  } const { MsEdgeTTS, OUTPUT_FORMAT } = require("msedge-tts");
+    // 注意：舊版的 Buffer 寫法在最新 Vercel API 中可能會報錯，我們改用最穩定的方式
+    res.status(200).send(Buffer.from(result.audio));
 
-module.exports = async function(req, res) {
-  const text = req.query.text;
-
-  if (!text) {
-    return res.status(400).send("請提供 text 參數");
-  }
-
-  try {
-    const tts = new MsEdgeTTS();
-    await tts.setMetadata("zh-TW-HsiaoChenNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
-    
-    const stream = tts.toStream(text);
-    const chunks = []; 
-
-    await new Promise((resolve, reject) => {
-      stream.on('data', (chunk) => {
-        chunks.push(chunk); 
-      });
-      stream.on('end', () => {
-        resolve(); 
-      });
-      stream.on('error', (err) => {
-        reject(err);
-      });
-    });
-
-    const audioBuffer = Buffer.concat(chunks);
-    
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', audioBuffer.length);
-    res.status(200).send(audioBuffer);
-    
   } catch (error) {
-    // 🚀 關鍵修改：把真正的錯誤原因印在畫面上！
-    console.error("TTS 發生錯誤:", error);
-    res.status(500).send("語音引擎啟動失敗。真實死因：" + error.toString() + " | 詳細訊息：" + error.message);
+    // 依然保留除錯機制，萬一失敗才知道死因
+    console.error("Vercel AI 語音失敗:", error);
+    res.status(500).send("語音生成失敗: " + error.message);
   }
-};
+}
