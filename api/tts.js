@@ -8,20 +8,14 @@ export default async function handler(req, res) {
     return res.status(400).send("請提供 text 參數");
   }
 
-  // 1. 消毒：把 Gemini 回傳內容裡可能會破壞語法的危險符號清掉
-  const safeText = text.replace(/&/g, '&amp;').replace(/</g, '').replace(/>/g, '');
-
   try {
     const tts = new MsEdgeTTS();
-    await tts.setMetadata("zh-CN-YunxiNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
     
-    // 🚀 2. 標籤注入：只穿插 <prosody> 變聲標籤，不破壞原有的外殼！
-    // rate="-20%": 降速 20%
-    // pitch="-25%": 音調大幅壓低，製造無機質的厚重電子感
-    const injectedText = `<prosody rate="-20%" pitch="-25%">${safeText}</prosody>`;
-
-    // 把注入變聲標籤的文字送進引擎
-    const { audioStream } = tts.toStream(injectedText);
+    // 🚀 為未來的 E.V 換上「曉雨 (HsiaoYu)」自然台灣女聲
+    // 若未來想要更活潑的聲音，可改為 "zh-CN-XiaoxiaoNeural"
+    await tts.setMetadata("zh-TW-HsiaoYuNeural", OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+    
+    const { audioStream } = tts.toStream(text);
     const chunks = []; 
 
     await new Promise((resolve, reject) => {
