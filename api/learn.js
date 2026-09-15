@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
   try {
-    // ⛅️ 1. 自動獲取嘉義的真實天氣
+    // ⛅️ 1. 自動獲取真實天氣
     let weatherInfo = "天氣晴朗";
     try {
       const wRes = await fetch("https://wttr.in/Chiayi?format=%C+%t");
@@ -24,15 +24,14 @@ export default async function handler(req, res) {
     請先用一句話報告今天的天氣概況與溫度，接著再分享一則關於「${randomTopic}」的最新資訊。
     請用繁體中文在 80 個字以內總結重點。開頭請固定說：『報告 Sir，今天嘉義天氣...』接著說『另外，我趁您休息時發現...』`;
 
-    // 🚀 4. 關鍵修正：改回 ?key= 網址參數，並升級為 gemini-3.5-flash-lite
-    const apiKey = "AQ.Ab8RN6Lv9CXYkk88nvPhCuXf0fYS5kBkQSHJXSaIXQXLSWnvRA";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
+    // 🚀 4. 放入截圖中真正有效的新金鑰！
+    const apiKey = "AQ.Ab8RN6LDFyhxw_9ry_3IY8eY5AHfZloUIMTB9hdjFhy7oNzPkQ";
 
-    const response = await fetch(url, {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent", {
       method: "POST",
       headers: { 
-        "Content-Type": "application/json"
-        // 絕對不加 x-goog-api-key！
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
