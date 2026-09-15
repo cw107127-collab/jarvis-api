@@ -2,12 +2,12 @@ import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
   try {
-    // ⚠️ 貼上你最新的 AQ. 開頭金鑰 (請確保引號內只有英文和數字)
+    // 已經幫你填入指定的金鑰
     const apiKey = "AQ.Ab8RN6Lv9CXYkk88nvPhCuXf0fYS5kBkQSHJXSaIXQXLSWnvRA"; 
     
     const prompt = "你現在是 E.V.，一個極度理智、冷靜的 AI 助理。請去網路上隨機搜尋一則今天最新的科技新聞、太空探索進度或有趣的科學冷知識。請用繁體中文在 50 個字以內總結重點。開頭請固定說：『報告 Sir，我趁您休息時發現了一筆資料...』";
 
-    // 🚀 將金鑰放回網址後面的標準寫法，並移除 Authorization 標頭
+    // 使用標準的網址參數 (?key=) 傳遞金鑰
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { 
@@ -20,12 +20,14 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
+    // 測謊機機制
     if (!data.candidates) {
         return res.status(500).send(`Gemini 還是拒絕回答，原因是：${JSON.stringify(data)}`);
     }
 
     const learningText = data.candidates[0].content.parts[0].text;
     
+    // 寫入 Vercel KV 記憶體
     await kv.set('ev_daily_memory', learningText);
 
     res.status(200).send(`✅ E.V. 學習完畢並已存檔：${learningText}`);
