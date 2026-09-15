@@ -4,12 +4,12 @@ export default async function handler(req, res) {
   try {
     const prompt = "你現在是 E.V.，一個極度理智、冷靜的 AI 助理。請去網路上隨機搜尋一則今天最新的科技新聞、太空探索進度或有趣的科學冷知識。請用繁體中文在 50 個字以內總結重點。開頭請固定說：『報告 Sir，我趁您休息時發現了一筆資料...』";
 
-    // 🚀 關鍵：不加 ?key=，而是把金鑰安安穩穩地放在 x-goog-api-key 標頭裡
+    // 🚀 換上你截圖裡真正有效的新金鑰！
     const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "x-goog-api-key": "AQ.Ab8RN6Lv9CXYkk88nvPhCuXf0fYS5kBkQSHJXSaIXQXLSWnvRA"
+        "x-goog-api-key": "AQ.Ab8RN6LDFyhxw_9ry_3IY8eY5AHfZloUIMTB9hdjFhy7oNzPkQ"
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }]
@@ -23,7 +23,6 @@ export default async function handler(req, res) {
     }
 
     const learningText = data.candidates[0].content.parts[0].text;
-    
     await kv.set('ev_daily_memory', learningText);
 
     res.status(200).send(`✅ E.V. 學習完畢並已存檔：${learningText}`);
