@@ -2,14 +2,12 @@ import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
   try {
-    // ⚠️ 記得替換成你的 Gemini API 金鑰
-    const apiKey ="AQ.Ab8RN6Lv9CXYkk88nvPhCuXf0fYS5kBkQSHJXSaIXQXLSWnvRA";
+    // 放入你截圖裡那把 AQ. 開頭的金鑰
+    const apiKey = "AQ.Ab8RN6KEieEyJjeNhPrujHxq6X8I7rmfRHem7Xhcz86thjQCIA"; 
     
-    // 給 E.V. 的自主學習指令
     const prompt = "你現在是 E.V.，一個極度理智、冷靜的 AI 助理。請去網路上隨機搜尋一則今天最新的科技新聞、太空探索進度或有趣的科學冷知識。請用繁體中文在 50 個字以內總結重點。開頭請固定說：『報告 Sir，我趁您休息時發現了一筆資料...』";
 
-    // 呼叫 Gemini 進行自主學習
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -18,15 +16,18 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    const learningText = data.candidates[0].content.parts[0].text;
 
-    // 將學習成果寫入 Vercel KV 記憶體區
+    // 🛡️ 測謊機機制：如果 Gemini 沒給答案，就把 Google 官方的報錯直接印在畫面上
+    if (!data.candidates) {
+        return res.status(500).send(`Gemini 拒絕回答，真實原因是：${JSON.stringify(data)}`);
+    }
+
+    const learningText = data.candidates[0].content.parts[0].text;
     await kv.set('ev_daily_memory', learningText);
 
     res.status(200).send(`✅ E.V. 學習完畢並已存檔：${learningText}`);
     
   } catch (error) {
-    console.error("學習失敗:", error);
-    res.status(500).send("學習失敗: " + error.message);
+    res.status(500).send("伺服器嚴重錯誤: " + error.message);
   }
 }
