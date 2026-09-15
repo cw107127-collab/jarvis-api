@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
     // 🚀 換上你截圖裡真正有效的新金鑰！
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent", {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent", {
 
       method: "POST",
 
