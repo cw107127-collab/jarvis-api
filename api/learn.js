@@ -24,14 +24,16 @@ export default async function handler(req, res) {
     請先用一句話報告今天的天氣概況與溫度，接著再分享一則關於「${randomTopic}」的最新資訊。
     請用繁體中文在 80 個字以內總結重點。開頭請固定說：『報告 Sir，今天嘉義天氣...』接著說『另外，我趁您休息時發現...』`;
 
-    // 🚀 4. 放入截圖中真正有效的新金鑰！
+    // 🚀 4. 這是截圖裡唯一存活的有效鑰匙！請原封不動使用它！
     const apiKey = "AQ.Ab8RN6LDFyhxw_9ry_3IY8eY5AHfZloUIMTB9hdjFhy7oNzPkQ";
+    
+    // 使用最標準的 ?key= 寫法，並呼叫 3.5 模型
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
 
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent", {
+    const response = await fetch(url, {
       method: "POST",
       headers: { 
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
