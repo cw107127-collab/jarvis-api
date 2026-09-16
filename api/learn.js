@@ -2,8 +2,8 @@ import { kv } from '@vercel/kv';
 
 export default async function handler(req, res) {
   try {
-    // ⛅️ 1. 取得嘉義市詳細氣象預報 (包含每小時與單日最高最低溫)
-    let weatherContext = "無法取得詳細氣象，請播報天氣穩定。";
+    // ⛅️ 1. 取得詳細氣象 (保留早、中、下午、晚上的關鍵數據)
+    let weatherContext = "無法取得詳細氣象";
     try {
       const wRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=23.477&longitude=120.441&hourly=temperature_2m,precipitation_probability,windspeed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FTaipei&forecast_days=1");
       if (wRes.ok) {
@@ -11,14 +11,10 @@ export default async function handler(req, res) {
         const maxT = wData.daily.temperature_2m_max[0];
         const minT = wData.daily.temperature_2m_min[0];
         
-        // 抓取關鍵時段的數據 (早上8點、中午12點、下午4點、晚上8點)
         let hourlyStr = "";
-        const hoursToCheck = [8, 12, 16, 20];
-        hoursToCheck.forEach(h => {
-          const temp = wData.hourly.temperature_2m[h];
-          const rain = wData.hourly.precipitation_probability[h];
-          const wind = wData.hourly.windspeed_10m[h];
-          hourlyStr += `${h}點:氣溫${temp}度,降雨機率${rain}%,風速${wind}km/h。`;
+        const hours = [8, 12, 16, 20];
+        hours.forEach(h => {
+          hourlyStr += `${h}點:氣溫${wData.hourly.temperature_2m[h]}度,降雨機率${wData.hourly.precipitation_probability[h]}%,風速${wData.hourly.windspeed_10m[h]}km/h。`;
         });
         
         weatherContext = `今日最高溫${maxT}度，最低溫${minT}度。各時段變化：${hourlyStr}`;
@@ -27,32 +23,34 @@ export default async function handler(req, res) {
       console.log("詳細天氣讀取失敗");
     }
 
-    // 🎲 2. 隨機主題扭蛋機 (專注於 2026 前沿科技)
-    const topics = ["2026年的最新AI突破", "2026年的太空探索進展", "最近一年的重大醫學突破", "最新的機器人或自動化技術", "2026年新能源與電池技術"];
-    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-    const now = new Date().getTime();
-    // 📅 自動取得當下的台灣日期 (格式：YYYY/MM/DD)
-    const todayDate = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
+    // 📅 2. 自動抓取當下的台灣日期 (月/日)
+    const now = new Date();
+    // 確保時區正確，只抓取數字的月和日
+    const month = now.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric' }).replace('月', '');
+    const day = now.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', day: 'numeric' }).replace('日', '');
+    const todayDate = `${month}月${day}日`;
+    const timestamp = now.getTime();
 
-    // 🧠 3. 升級版提示詞：注入時間錨點與氣象數據陣列
+    // 🎲 3. 隨機主題扭蛋機 (換成有趣、實用的科技主題)
+    const topics = ["2026年最新實用的AI應用", "最近一年與生活相關的機器人發明", "2026年最酷的硬體或物聯網新玩具", "與虛擬實境或遊戲相關的最新科技", "未來日常通勤的新突破"];
+    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+
+    // 🧠 4. 終極版提示詞：加入日期，要求白話文與全面天氣
     const prompt = `你現在是 E.V.，一個極度理智、冷靜的 AI 助理。
-    【時間錨點】：今天是 ${todayDate}。(代碼：${now})
+    【時間錨點】：今天是 2026 年 ${todayDate}。(代碼：${timestamp})
     
     【天氣數據】：
     嘉義今日氣象：「${weatherContext}」。
     
     【你的任務】：
-    1. 氣象播報：請根據上述數據，以口語化的方式報告今天最高及最低溫大約落在哪裡、什麼時段可能會下雨或風勢較大。
-    2. 知識補充：分享一則關於「${randomTopic}」的知識。
+    1. 氣象播報：請根據數據，給出「全面但順暢」的報告。包含高低溫、早中晚的變化，並提醒哪個時段會下雨或風大、該如何防範。
+    2. 知識補充：分享一則關於「${randomTopic}」的最新知識 (限 2026 年近一年內)。
     
     【嚴格要求】：
-    - 氣象報告請務必精簡像專業氣象主播。
-    - 知識補充必須是「2026 年近一年內」最新發表的科技突破或科學新知，絕對不能使用 2026 年以前的舊資訊！
-    - 必須包含具體細節（如最新研究機構、數字）。
-    - 請用繁體中文，總字數嚴格控制在 120 字以內，適合直接用語音唸出。
-    - 開頭請固定說：『報告 Sir，今日嘉義天氣...』接著說『另外，為您準備了最新的知識補充...』`;
+    - 知識補充必須「非常白話、生活化」，想像你在跟喜歡寫程式與做硬體的年輕人對話，絕對不能用艱澀的材料學或學術名詞，請用日常比喻讓他一聽就懂。
+    - 總字數控制在 150 字以內，適合用語音順暢唸出。
+    - 開頭請固定說：『報告 Sir，今天是 ${todayDate}，嘉義今日天氣...』接著說『另外，為您準備了最新的知識補充...』`;
 
-    // 🔐 從保險箱拿出金鑰
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).send("找不到金鑰，請確認 Vercel 設定");
 
@@ -64,7 +62,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
-          temperature: 0.8 // 稍微降溫，確保它拿出來的是真實新聞，不會腦補太多科幻情節
+          temperature: 0.8
         }
       })
     });
