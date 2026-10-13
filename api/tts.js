@@ -4,6 +4,7 @@ const { MsEdgeTTS, OUTPUT_FORMAT } = pkg;
 export default async function handler(req, res) {
   const text = req.query.text;
 
+  
   if (!text) {
     return res.status(400).send("請提供 text 參數");
   }
